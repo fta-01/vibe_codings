@@ -1,0 +1,195 @@
+[
+  {
+    "id": "march-in-place",
+    "name": "原地踏步",
+    "category": "热身",
+    "summary": "轻松原地踏步，活动脚踝、热身全身",
+    "isTimed": true,
+    "defaultSeconds": 60,
+    "steps": ["身体自然直立，目视前方", "原地交替抬腿踏步，动作放松", "手臂自然摆动，保持均匀呼吸"],
+    "note": "热身 1 分钟，身体微热即可"
+  },
+  {
+    "id": "high-knee-walk",
+    "name": "高抬腿走",
+    "category": "热身",
+    "summary": "膝抬到髋部高度，慢速交替",
+    "isTimed": true,
+    "defaultSeconds": 30,
+    "steps": ["上身保持直立", "交替抬膝至髋部高度，慢速行走", "手臂配合自然摆动"],
+    "note": "30 秒"
+  },
+  {
+    "id": "ankle-circles",
+    "name": "脚踝绕环",
+    "category": "热身",
+    "summary": "抬起一只脚踝画圈，左右各 10 圈",
+    "isTimed": false,
+    "reps": "左右各 10 圈",
+    "steps": ["单脚站立或扶墙保持平衡", "抬起一只脚，脚踝缓慢画圈", "换另一侧重复"]
+  },
+  {
+    "id": "hip-circles",
+    "name": "髋部环绕",
+    "category": "热身",
+    "summary": "叉腰画圈，左右各 5 圈",
+    "isTimed": false,
+    "reps": "左右各 5 圈",
+    "steps": ["双脚与肩同宽站立，双手叉腰", "髋部缓慢画大圈", "换方向重复"]
+  },
+  {
+    "id": "shoulder-circles",
+    "name": "肩部环绕",
+    "category": "热身",
+    "summary": "双手搭肩，向前/向后画圈，各 10 次",
+    "isTimed": false,
+    "reps": "前后各 10 次",
+    "steps": ["双手搭在肩膀上", "手肘带动肩部向前画圈 10 次", "再向后画圈 10 次"]
+  },
+  {
+    "id": "arm-swings",
+    "name": "手臂摆动",
+    "category": "热身",
+    "summary": "快速开合摆臂，激活上身",
+    "isTimed": true,
+    "defaultSeconds": 30,
+    "steps": ["双臂在身体前方交叉", "快速向两侧打开再交叉", "保持节奏，动作轻快"],
+    "note": "30 秒"
+  },
+  {
+    "id": "neck-circles",
+    "name": "颈部环绕",
+    "category": "热身",
+    "summary": "头缓慢左右转，放松颈椎，各 5 次",
+    "isTimed": false,
+    "reps": "左右各 5 次",
+    "steps": ["头部缓慢向左转，停留片刻", "回正后缓慢向右转", "动作轻柔，不要甩头"],
+    "note": "颈椎不适者减小幅度"
+  },
+  {
+    "id": "torso-twist",
+    "name": "体转热身",
+    "category": "热身",
+    "summary": "双脚开立手叉腰，左右转体，各 10 次",
+    "isTimed": false,
+    "reps": "左右各 10 次",
+    "steps": ["双脚开立与肩同宽，双手叉腰", "腰部带动上身向左转", "回正后向右转，交替进行"]
+  },
+  {
+    "id": "lunge-chest-opener",
+    "name": "弓步扩胸",
+    "category": "热身",
+    "summary": "前弓步同时双臂打开扩胸，左右交替 10 次",
+    "isTimed": false,
+    "reps": "左右交替 10 次",
+    "steps": ["向前跨一步成弓步", "同时双臂向两侧打开扩胸", "收回换另一侧交替"]
+  },
+  {
+    "id": "cat-stretch",
+    "name": "猫式伸展",
+    "category": "热身",
+    "summary": "四点跪姿，塌腰抬头、弓背低头交替",
+    "isTimed": false,
+    "reps": "10 次",
+    "steps": ["四点跪姿，双手在肩正下方，双膝在髋正下方", "吸气塌腰抬头，脊柱下沉", "呼气弓背低头，脊柱拱起", "缓慢交替"]
+  },
+  {
+    "id": "squat",
+    "name": "深蹲",
+    "category": "力量",
+    "summary": "双脚与肩同宽，臀部后坐下蹲至大腿平行地面",
+    "isTimed": false,
+    "reps": "3 组 × 15 次",
+    "steps": ["双脚与肩同宽，脚尖微外展", "臀部后坐像坐椅子，下蹲至大腿平行地面", "膝盖与脚尖同向，不内扣", "脚跟发力站起还原"],
+    "videoUrl": "https://www.bilibili.com/video/BV1FB4y137gi"
+  },
+  {
+    "id": "wall-sit",
+    "name": "靠墙静蹲",
+    "category": "力量",
+    "summary": "背贴墙下蹲，大腿与地面平行，膝盖不超脚尖",
+    "isTimed": true,
+    "defaultSeconds": 45,
+    "steps": ["背部贴墙，双脚向前迈一步", "沿墙下滑至大腿与地面平行", "膝盖不超过脚尖，保持静止"],
+    "note": "新手 30 秒起步，逐步到 60 秒"
+  },
+  {
+    "id": "glute-bridge",
+    "name": "臀桥",
+    "category": "力量",
+    "summary": "仰卧抬臀使肩-髋-膝成直线，顶端停留 2 秒",
+    "isTimed": false,
+    "reps": "3 组 × 15 次",
+    "steps": ["仰卧屈膝，双脚踩地与髋同宽", "臀部发力抬起，使肩-髋-膝成一条直线", "顶端停留 2 秒", "缓慢下放还原"]
+  },
+  {
+    "id": "plank",
+    "name": "平板支撑",
+    "category": "力量",
+    "summary": "肘撑地，头背臀成直线，核心收紧",
+    "isTimed": true,
+    "defaultSeconds": 45,
+    "steps": ["双肘撑地，位于肩正下方", "身体呈一条直线，核心收紧", "不塌腰、不撅臀，保持均匀呼吸"],
+    "note": "新手 30 秒起步，逐步到 60 秒"
+  },
+  {
+    "id": "indoor-brisk-walk",
+    "name": "户内快走",
+    "category": "有氧 · 跑动",
+    "summary": "原地大步快走，摆臂，保持均匀呼吸",
+    "isTimed": true,
+    "defaultSeconds": 120,
+    "steps": ["原地大步快走，步幅加大", "双臂弯曲配合摆动", "保持均匀呼吸"],
+    "note": "2 分钟"
+  },
+  {
+    "id": "jog-in-place",
+    "name": "原地慢跑",
+    "category": "有氧 · 跑动",
+    "summary": "原地交替抬腿慢跑，手臂自然摆动",
+    "isTimed": true,
+    "defaultSeconds": 120,
+    "steps": ["身体直立，原地交替抬腿", "手臂自然摆动，保持均匀呼吸", "落地轻盈，前脚掌着地"],
+    "note": "新手可从 1 分钟开始，逐步到 2-5 分钟"
+  },
+  {
+    "id": "high-knees",
+    "name": "原地高抬腿",
+    "category": "有氧 · 跑动",
+    "summary": "上身直立，大腿抬至髋部高度快速交替",
+    "isTimed": true,
+    "defaultSeconds": 30,
+    "steps": ["上身保持直立", "大腿快速交替抬至髋部高度", "手臂配合摆动，前脚掌落地"],
+    "note": "30 秒，强度高，量力而行"
+  },
+  {
+    "id": "butt-kicks",
+    "name": "后踢腿跑",
+    "category": "有氧 · 跑动",
+    "summary": "脚后跟交替踢向臀部",
+    "isTimed": true,
+    "defaultSeconds": 30,
+    "steps": ["原地慢跑姿态", "脚后跟交替向后踢向臀部", "保持节奏，落地轻盈"],
+    "note": "30 秒"
+  },
+  {
+    "id": "jumping-jacks",
+    "name": "开合跳",
+    "category": "有氧 · 跑动",
+    "summary": "跳起双脚分开同时双手过头击掌，落地轻盈",
+    "isTimed": true,
+    "defaultSeconds": 30,
+    "steps": ["双脚并拢站立，双手放身体两侧", "跳起双脚分开，同时双手过头击掌", "跳回并拢还原，落地轻盈"],
+    "note": "30 秒，膝盖不适者改为无跳跃侧步"
+  },
+  {
+    "id": "child-pose",
+    "name": "婴儿式",
+    "category": "拉伸 · 放松",
+    "summary": "跪坐身体前趴，双臂前伸，放松腰背",
+    "isTimed": true,
+    "defaultSeconds": 45,
+    "steps": ["跪坐，双膝略分开", "身体向前趴下，额头贴地", "双臂向前伸展，放松腰背", "保持深呼吸"],
+    "note": "30-60 秒，运动后放松"
+  }
+]

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# 密钥与本地配置(约定:任何个人配置一律叫 config.json)
+config.json
+local.properties
+
+# 01-mini-game-hub 运行时数据 / 下载内容(仅限该项目目录,勿用 **/ 以免误伤其他项目)
+projects/01-mini-game-hub/games/
+projects/01-mini-game-hub/data/
+
+# Android 构建产物与本地文件
+*.apk
+*.keystore
+*.jks
+**/.gradle/
+**/build/
+**/.kotlin/
+
+# AI 副驾会话记忆(本地私有,不入库)
+.workbuddy/

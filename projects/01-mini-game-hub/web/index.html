@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小游戏聚合客户端(GitHub 本地)</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --card: #1c2540;
+    --card-hover: #243152;
+    --accent: #4f8cff;
+    --text: #e8ecf4;
+    --muted: #8b95ab;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1a2440 0%, var(--bg) 55%);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  #view-list { height: 100vh; display: flex; flex-direction: column; }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 22px; flex-wrap: wrap;
+  }
+  .logo { font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+  .logo span { color: var(--accent); }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .spacer { flex: 1; }
+  #search {
+    background: var(--panel); border: 1px solid #2a3552;
+    color: var(--text); border-radius: 20px; padding: 8px 16px;
+    width: 240px; font-size: 13px; outline: none;
+  }
+  #search:focus { border-color: var(--accent); }
+  button {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 600;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.ghost {
+    background: transparent; border: 1px solid #33406b; color: var(--muted);
+    font-weight: 400;
+  }
+  button.ghost:hover { color: var(--text); border-color: var(--accent); }
+  button.ghost.danger { color: #ff9a9a; border-color: #5c2c2c; }
+  button.ghost.danger:hover:not(:disabled) { color: #ff6b6b; border-color: #a33; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .badge-on { background: #16351f; color: #6fdc8c; border: 1px solid #2c5c3a; }
+
+  #status {
+    width: 100%; font-size: 12px; color: var(--muted);
+    padding: 0 22px 6px; display: none; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  #status.show { display: block; }
+  #status.error { color: #ff9a9a; }
+
+  #meta { padding: 0 22px 10px; font-size: 12px; color: var(--muted); }
+  #meta b { color: var(--text); }
+
+  #selbar {
+    display: none; align-items: center; gap: 12px;
+    margin: 0 22px 10px; padding: 10px 14px;
+    background: #26324f; border: 1px solid #3a4a78; border-radius: 10px;
+    font-size: 13px;
+  }
+  #selbar.show { display: flex; }
+  #selbar .n { color: var(--text); font-weight: 700; }
+  #selbar .spacer { flex: 1; }
+  #selbar button { background: #5c1a1a; }
+  #selbar button.danger-ghost { background: transparent; border: 1px solid #7a3a3a; color: #ff9a9a; }
+
+  #grid {
+    flex: 1; overflow-y: auto; padding: 8px 22px 30px;
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    align-content: start;
+  }
+  .card {
+    background: var(--card); border-radius: 12px; overflow: hidden;
+    cursor: pointer; transition: transform .15s, box-shadow .15s, background .15s;
+    border: 1px solid transparent;
+  }
+  .card:hover {
+    transform: translateY(-3px); background: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35); border-color: #33406b;
+  }
+  .cover-wrap {
+    position: relative; aspect-ratio: 16/10; overflow: hidden;
+    background: #0b1020;
+  }
+  .card .cover {
+    width: 100%; height: 100%; object-fit: cover;
+    background: #0b1020; display: block;
+  }
+  .fallback-cover {
+    width: 100%; height: 100%; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .fallback-cover .hc {
+    font-size: 42px; font-weight: 800; letter-spacing: 1px;
+    text-shadow: 0 3px 18px rgba(0,0,0,.4);
+  }
+  .card .name {
+    padding: 10px 12px 2px; font-size: 13px; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card .repo-tag {
+    padding: 2px 12px 10px; font-size: 11px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card .local-badge {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    font-size: 10px; padding: 2px 7px; border-radius: 8px;
+    background: #12331d; color: #6fdc8c; border: 1px solid #2c5c3a;
+  }
+  .card .check {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    width: 18px; height: 18px; border-radius: 5px; cursor: pointer;
+    accent-color: var(--accent);
+  }
+  .card .del {
+    position: absolute; bottom: 8px; right: 8px; z-index: 3;
+    width: 26px; height: 26px; border-radius: 8px; font-size: 14px;
+    border: 1px solid #5c2c2c; background: rgba(20,8,12,.78); color: #ff9a9a;
+    cursor: pointer; opacity: 0; transition: opacity .15s;
+  }
+  .card:hover .del { opacity: 1; }
+  .card .del:hover { background: #5c1a1a; color: #fff; }
+  .card.selected { border-color: var(--accent); background: #21304f; }
+
+  .empty, .loading {
+    grid-column: 1 / -1; text-align: center; padding: 60px 0;
+    color: var(--muted); font-size: 14px;
+  }
+  .spin {
+    width: 26px; height: 26px; border: 3px solid #2a3552;
+    border-top-color: var(--accent); border-radius: 50%;
+    margin: 0 auto 14px; animation: rot 0.8s linear infinite;
+  }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  #pager {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 22px 22px; flex-wrap: wrap;
+  }
+  #pager .info { font-size: 12px; color: var(--muted); margin-right: 8px; }
+  .page-btn {
+    min-width: 34px; height: 32px; padding: 0 8px; border-radius: 8px;
+    background: var(--panel); border: 1px solid #2a3552; color: var(--muted);
+    font-size: 13px; cursor: pointer;
+  }
+  .page-btn:hover:not(:disabled):not(.on) { color: var(--text); border-color: var(--accent); }
+  .page-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .page-gap { color: var(--muted); padding: 0 2px; }
+
+  #view-play { display: none; height: 100vh; flex-direction: column; }
+  #view-play.show { display: flex; }
+  .playbar {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    background: var(--panel); border-bottom: 1px solid #2a3552;
+  }
+  .playbar .name { font-size: 14px; font-weight: 600; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis; }
+  #gameFrame { flex: 1; width: 100%; border: none; background: #000; }
+
+  .modal-mask {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(5,8,16,.6); align-items: center; justify-content: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid #2a3552; border-radius: 14px;
+    width: 460px; max-width: 92vw; padding: 22px;
+  }
+  .modal h3 { font-size: 16px; margin-bottom: 6px; }
+  .modal .hint { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .modal .hint a { color: var(--accent); }
+  .modal input {
+    width: 100%; background: var(--bg); border: 1px solid #2a3552; color: var(--text);
+    border-radius: 8px; padding: 10px 12px; font-size: 13px; outline: none;
+    margin-bottom: 14px; font-family: Consolas, monospace;
+  }
+  .modal input:focus { border-color: var(--accent); }
+  .modal .row { display: flex; gap: 10px; justify-content: flex-end; }
+  .tag-status { font-size: 12px; padding: 3px 10px; border-radius: 10px; margin-bottom: 12px; display: inline-block; }
+  .tag-status.on { background: #16351f; color: #6fdc8c; border: 1px solid #2c5c3a; }
+  .tag-status.off { background: #351616; color: #ff9a9a; border: 1px solid #5c2c2c; }
+</style>
+</head>
+<body>
+
+<div id="view-list">
+  <header>
+    <div>
+      <div class="logo">🎮 GitHub <span>小游戏</span>客户端</div>
+      <div class="sub">源码下载到本地 · 免编译即点即玩 · 离线可用</div>
+    </div>
+    <div class="spacer"></div>
+    <input id="search" type="search" placeholder="搜索本地游戏…">
+    <button id="btn-refresh" class="ghost">🔄 拉取更新</button>
+    <button id="btn-verify" class="ghost">🔍 检查可玩性</button>
+    <button id="btn-delete" class="ghost danger" disabled>🗑 删除所选</button>
+    <button id="btn-settings" class="ghost" title="设置">⚙️</button>
+  </header>
+  <div id="status"></div>
+  <div id="meta"></div>
+  <div id="selbar">
+    <span>已选 <span class="n" id="sel-count">0</span> 款</span>
+    <span class="spacer"></span>
+    <button class="danger-ghost" id="btn-sel-clear">取消选择</button>
+    <button id="btn-sel-delete">🗑 批量删除</button>
+  </div>
+  <div id="grid"></div>
+  <div id="pager"></div>
+</div>
+
+<div id="view-play">
+  <div class="playbar">
+    <button id="btn-back">← 返回</button>
+    <div class="name" id="play-title"></div>
+    <div class="spacer" style="flex:1"></div>
+    <button id="btn-open" class="ghost">↗ 在浏览器打开</button>
+  </div>
+  <iframe id="gameFrame" allowfullscreen allow="autoplay; fullscreen"></iframe>
+</div>
+
+<div class="modal-mask" id="settings-mask">
+  <div class="modal">
+    <h3>⚙️ 设置</h3>
+    <div class="hint">
+      <b>GitHub api_key(Personal Access Token)</b> 可提升 GitHub 搜索配额
+      (无 token 每分钟 10 次,有 token 每分钟 30 次),拉取更多仓库更快更全。
+      在 <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
+      生成(勾选 <code>public_repo</code> 即可),token 仅保存在本机。
+      <br><br>🎮 下载的游戏源码存放在客户端目录 <b>games/</b>,可直接查看、可离线游玩。
+    </div>
+    <span class="tag-status off" id="token-status">未配置</span>
+    <input id="token-input" type="password" placeholder="ghp_... 粘贴你的 token" autocomplete="off">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">每轮「拉取更新」探测候选仓库 <b id="repo-count-label">5</b> 个(1-20),从这些仓库新增可玩游戏</div>
+    <input id="repo-count" type="number" min="1" max="20" value="5" style="font-family:inherit;margin-bottom:14px;">
+    <div class="row">
+      <button id="btn-token-save" class="ghost">保存</button>
+      <button id="btn-token-clear" class="ghost">清除</button>
+      <button id="btn-token-close">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="confirm-mask">
+  <div class="modal">
+    <h3 id="confirm-title">确认操作</h3>
+    <div class="hint" id="confirm-hint"></div>
+    <div class="row">
+      <button id="btn-confirm-cancel" class="ghost">取消</button>
+      <button id="btn-confirm-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const statusEl = document.getElementById('status');
+  const metaEl = document.getElementById('meta');
+  const searchEl = document.getElementById('search');
+  const btnRefresh = document.getElementById('btn-refresh');
+  let games = [];
+  let filtered = [];
+  let page = 1;
+  const PAGE_SIZE = 10;
+  let repoCount = 5;
+  let busy = false;
+
+  const selected = new Set();
+  const selKey = g => (g.repo || '') + '|' + (g.rel || '');
+
+  function toggleSelect(g) {
+    const k = selKey(g);
+    if (selected.has(k)) selected.delete(k); else selected.add(k);
+    updateSelBar();
+    render(filtered, true);
+  }
+  function updateSelBar() {
+    const bar = document.getElementById('selbar');
+    document.getElementById('sel-count').textContent = selected.size;
+    bar.classList.toggle('show', selected.size > 0);
+    document.getElementById('btn-delete').disabled = selected.size === 0;
+  }
+  function selectedItems() {
+    return games.filter(g => selected.has(selKey(g)));
+  }
+
+  const gameFolder = {};
+  let ghRepoCount = 0, ghDownloading = 0;
+
+  function status(msg, isError) {
+    statusEl.textContent = msg;
+    statusEl.className = isError ? 'show error' : 'show';
+  }
+  function clearStatus() { statusEl.className = ''; }
+
+  // 下载/扫描进度(由 Python 端调用)
+  window.__ghProgress = (msg) => status('⏳ ' + msg);
+
+  async function loadGames(refresh) {
+    busy = true;
+    btnRefresh.disabled = true;
+    grid.innerHTML = '<div class="loading"><div class="spin"></div>' + (refresh ? '正在拉取新游戏…' : '正在加载本地游戏…') + '</div>';
+    clearStatus();
+    try {
+      const res = await window.pywebview.api.get_games(refresh, repoCount);
+      games = res.games || [];
+      selected.clear();
+      updateSelBar();
+      if (res.added > 0) {
+        let msg = `✅ 已从 GitHub 拉取源码到本地 games/ · 新增 ${res.added} 款`;
+        if (res.added < repoCount) msg += `(本轮候选 ${repoCount} 个仓库,达标 ${res.added} 款)`;
+        if (res.note) msg += ' · ' + res.note;
+        status(msg);
+      } else if (res.error) {
+        status(res.error, !res.ok);
+      } else if (!res.ok) {
+        status('拉取完成,未找到可玩静态游戏', true);
+      } else {
+        const from = res.source === 'online'
+        ? '已从 GitHub 拉取源码到本地 games/'
+        : '读取本地已下载游戏';
+        status(`✅ ${from}${res.note ? ' · ' + res.note : ''}`);
+      }
+      render(games);
+    } catch (e) {
+      grid.innerHTML = '<div class="empty">加载失败:无法连接主进程</div>';
+      games = [];
+    } finally {
+      busy = false;
+      btnRefresh.disabled = false;
+    }
+  }
+
+  function initials(t) {
+    if (/[\u4e00-\u9fff]/.test(t)) {
+      const cjk = t.match(/[\u4e00-\u9fff]/g) || [];
+      return (cjk[0] || '?') + (cjk[1] || '');
+    }
+    const words = t.trim().split(/\s+/).filter(Boolean);
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return (words[0] || '?').slice(0, 2).toUpperCase();
+  }
+
+  function makeFallback(title) {
+    const d = document.createElement('div');
+    d.className = 'fallback-cover';
+    let h = 0;
+    for (const ch of String(title)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const hue = h % 360;
+    d.style.background = `linear-gradient(135deg, hsl(${hue},28%,15%) 0%, hsl(${(hue + 36) % 360},32%,24%) 55%, hsl(${(hue + 72) % 360},42%,18%) 100%)`;
+    const el = document.createElement('span');
+    el.className = 'hc';
+    el.textContent = initials(title);
+    el.style.color = `hsl(${hue},72%,72%)`;
+    d.append(el);
+    return d;
+  }
+
+  function renderPager() {
+    const pager = document.getElementById('pager');
+    pager.innerHTML = '';
+    const n = filtered.length;
+    const pages = Math.max(1, Math.ceil(n / PAGE_SIZE));
+    if (!n) return;
+    const info = document.createElement('span');
+    info.className = 'info';
+    info.textContent = `第 ${page}/${pages} 页`;
+    pager.append(info);
+
+    const prev = document.createElement('button');
+    prev.className = 'page-btn';
+    prev.textContent = '‹';
+    prev.title = '上一页';
+    prev.disabled = page <= 1;
+    prev.addEventListener('click', () => { page--; render(filtered, true); });
+    pager.append(prev);
+
+    const win = [];
+    for (let p = 1; p <= pages; p++) {
+      if (pages > 9 && p > 2 && p < pages - 1 && Math.abs(p - page) > 2) {
+        if (win[win.length - 1] !== 0) win.push(0);
+        continue;
+      }
+      win.push(p);
+    }
+    for (const p of win) {
+      if (p === 0) {
+        const gap = document.createElement('span');
+        gap.className = 'page-gap';
+        gap.textContent = '…';
+        pager.append(gap);
+      } else {
+        const b = document.createElement('button');
+        b.className = 'page-btn' + (p === page ? ' on' : '');
+        b.textContent = p;
+        b.addEventListener('click', () => { page = p; render(filtered, true); });
+        pager.append(b);
+      }
+    }
+
+    const next = document.createElement('button');
+    next.className = 'page-btn';
+    next.textContent = '›';
+    next.title = '下一页';
+    next.disabled = page >= pages;
+    next.addEventListener('click', () => { page++; render(filtered, true); });
+    pager.append(next);
+  }
+
+  function render(list, keepPage) {
+    filtered = list || [];
+    const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (!keepPage) page = 1;
+    if (page > pages) page = pages;
+    metaEl.innerHTML = `共 <b>${filtered.length}</b> 款游戏 · 全部<b>本地源码、免编译</b> · 第 ${page}/${pages} 页`;
+    grid.innerHTML = '';
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty">本地还没有游戏,点「🔄 拉取更新」从 GitHub 下载<br>首次拉取需下载几个仓库(source 较大),请耐心等待</div>';
+      renderPager();
+      return;
+    }
+    const slice = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const frag = document.createDocumentFragment();
+    for (const g of slice) {
+      const card = document.createElement('div');
+      card.className = 'card' + (selected.has(selKey(g)) ? ' selected' : '');
+      const badge = document.createElement('span');
+      badge.className = 'local-badge';
+      badge.textContent = '本地';
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.className = 'check';
+      check.title = '选择/取消(可批量删除)';
+      check.checked = selected.has(selKey(g));
+      check.addEventListener('click', e => { e.stopPropagation(); toggleSelect(g); });
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.title = '删除此游戏';
+      del.textContent = '✕';
+      del.addEventListener('click', e => { e.stopPropagation(); askDelete([g]); });
+      const wrap = document.createElement('div');
+      wrap.className = 'cover-wrap';
+      wrap.append(badge, check, del);
+      if (g.thumb) {
+        const img = document.createElement('img');
+        img.className = 'cover';
+        img.loading = 'lazy';
+        img.src = g.thumb;
+        img.onerror = () => { img.remove(); wrap.append(makeFallback(g.title)); };
+        wrap.append(img);
+      } else {
+        wrap.append(makeFallback(g.title));
+      }
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.title = g.title;
+      name.textContent = g.title;
+      const tag = document.createElement('div');
+      tag.className = 'repo-tag';
+      tag.textContent = g.repo || '';
+      card.append(wrap, name, tag);
+      card.addEventListener('click', () => play(g));
+      frag.appendChild(card);
+    }
+    grid.appendChild(frag);
+    renderPager();
+  }
+
+  function play(g) {
+    document.getElementById('view-list').style.display = 'none';
+    const vp = document.getElementById('view-play');
+    vp.classList.add('show');
+    document.getElementById('play-title').textContent = g.title;
+    document.getElementById('gameFrame').src = g.url;
+  }
+
+  function back() {
+    const frame = document.getElementById('gameFrame');
+    frame.src = '';
+    document.getElementById('view-play').classList.remove('show');
+    document.getElementById('view-list').style.display = 'flex';
+  }
+
+  // 设置弹窗
+  const mask = document.getElementById('settings-mask');
+  async function refreshSettings() {
+    try {
+      const c = await window.pywebview.api.get_config();
+      const tag = document.getElementById('token-status');
+      const input = document.getElementById('token-input');
+      tag.textContent = c.github_token_set ? '✅ 已配置' : '未配置';
+      tag.className = 'tag-status ' + (c.github_token_set ? 'on' : 'off');
+      input.value = c.github_token_set ? c.github_token : '';
+      if (c.github_token_env) {
+        tag.textContent += ' (环境变量)';
+        input.placeholder = 'token 来自环境变量 GITHUB_TOKEN,留空即可';
+      }
+      repoCount = Math.max(1, Math.min(20, c.repo_count || 5));
+      document.getElementById('repo-count').value = repoCount;
+      document.getElementById('repo-count-label').textContent = repoCount;
+    } catch (e) { /* ignore */ }
+  }
+
+  document.getElementById('btn-settings').addEventListener('click', () => {
+    mask.classList.add('show');
+    refreshSettings();
+  });
+  document.getElementById('btn-token-close').addEventListener('click', () => mask.classList.remove('show'));
+  mask.addEventListener('click', e => { if (e.target === mask) mask.classList.remove('show'); });
+  document.getElementById('btn-token-save').addEventListener('click', async () => {
+    const v = document.getElementById('token-input').value.trim();
+    await window.pywebview.api.set_github_token(v);
+    const n = parseInt(document.getElementById('repo-count').value, 10);
+    if (!isNaN(n)) await window.pywebview.api.set_repo_count(n);
+    repoCount = Math.max(1, Math.min(20, isNaN(n) ? repoCount : n));
+    await refreshSettings();
+    status(v ? '✅ 设置已保存' : '✅ 已清除 api_key');
+    mask.classList.remove('show');
+  });
+  document.getElementById('btn-token-clear').addEventListener('click', async () => {
+    await window.pywebview.api.set_github_token('');
+    await refreshSettings();
+  });
+
+  // 删除 / 批量删除 / 可玩性巡检
+  const confirmMask = document.getElementById('confirm-mask');
+  let confirmOk = null;
+  function askConfirm(title, hint, onOk) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-hint').textContent = hint;
+    confirmOk = onOk;
+    confirmMask.classList.add('show');
+  }
+  document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+    confirmMask.classList.remove('show');
+    if (confirmOk) { const f = confirmOk; confirmOk = null; f(); }
+  });
+  document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+    confirmMask.classList.remove('show');
+    confirmOk = null;
+  });
+  confirmMask.addEventListener('click', e => { if (e.target === confirmMask) { confirmMask.classList.remove('show'); confirmOk = null; } });
+
+  function askDelete(items) {
+    const n = items.length;
+    askConfirm(
+      `删除 ${n} 款游戏`,
+      n === 1 ? `将删除「${items[0].title}」及其本地源码文件,此操作不可恢复。` : `将删除所选 ${n} 款游戏及各自的本地源码文件,此操作不可恢复。`,
+      () => doDelete(items)
+    );
+  }
+
+  async function doDelete(items) {
+    busy = true;
+    let res;
+    try {
+      res = await window.pywebview.api.delete_games(items.map(g => ({ repo: g.repo, rel: g.rel })));
+    } catch (e) {
+      status('删除失败:无法连接主进程', true);
+      busy = false;
+      return;
+    }
+    games = res.games || [];
+    selected.clear();
+    updateSelBar();
+    status(`✅ 已删除 ${res.deleted || 0} 款游戏,本地文件已清理`);
+    render(games);
+    busy = false;
+  }
+
+  async function runVerify() {
+    if (busy) return;
+    busy = true;
+    document.getElementById('btn-verify').disabled = true;
+    status('🔍 检查本地游戏可玩性…');
+    try {
+      const res = await window.pywebview.api.verify_games(true);
+      games = res.games || [];
+      updateSelBar();
+      const removed = (res.removed || []).length;
+      const fixed = (res.fixed || []).length;
+      let msg = `✅ 可玩性检查完成:共 ${res.checked ?? res.checked2 ?? games.length} 款,` +
+        (removed ? `移除 ${removed} 款不可玩,` : '全部资源就绪,') +
+        (fixed ? `补齐修复 ${fixed} 款` : '无需修复');
+      status(msg, Boolean(res.error));
+      if (res.error) status('可玩性检查:' + res.error, true);
+      render(games);
+    } catch (e) {
+      status('可玩性检查失败:' + e, true);
+    } finally {
+      busy = false;
+      document.getElementById('btn-verify').disabled = false;
+    }
+  }
+
+  document.getElementById('btn-delete').addEventListener('click', () => {
+    if (selected.size) askDelete(selectedItems());
+  });
+  document.getElementById('btn-sel-delete').addEventListener('click', () => {
+    if (selected.size) askDelete(selectedItems());
+  });
+  document.getElementById('btn-sel-clear').addEventListener('click', () => {
+    selected.clear();
+    updateSelBar();
+    render(filtered, true);
+  });
+  document.getElementById('btn-verify').addEventListener('click', runVerify);
+  updateSelBar();
+
+  document.getElementById('btn-back').addEventListener('click', back);
+  document.getElementById('btn-open').addEventListener('click', () => {
+    const g = games.find(x => x.url === document.getElementById('gameFrame').src);
+    if (g) window.pywebview.api.open_local(g.url);
+  });
+  searchEl.addEventListener('input', () => {
+    const q = searchEl.value.trim().toLowerCase();
+    render(games.filter(g => (g.title || '').toLowerCase().includes(q)));
+  });
+  btnRefresh.addEventListener('click', () => { if (!busy) loadGames(true); });
+
+  window.addEventListener('pywebviewready', async () => {
+    try {
+      const c = await window.pywebview.api.get_config();
+      repoCount = Math.max(1, Math.min(20, c.repo_count || 5));
+    } catch (e) { /* 默认 5 */ }
+    loadGames(false);
+  });
+</script>
+</body>
+</html>
